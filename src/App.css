@@ -473,6 +473,13 @@
   border-color: var(--accent);
 }
 
+.task-form__hint {
+  margin: 0;
+  font-size: 0.75rem;
+  color: var(--text);
+  opacity: 0.8;
+}
+
 .task-form__row {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -653,6 +660,10 @@
   font-weight: 600;
   font-variant-numeric: tabular-nums;
   color: var(--accent);
+}
+
+.task-row__spent--over {
+  color: var(--danger);
 }
 
 .task-row__actions {
@@ -904,6 +915,10 @@
   font-weight: 600;
   font-variant-numeric: tabular-nums;
   color: var(--text-h);
+}
+
+.history-item__time--over {
+  color: var(--danger);
 }
 
 /* Daily time */

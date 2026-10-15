@@ -32,7 +32,10 @@ function ActiveView() {
   const [formMode, setFormMode] = useState<FormMode>({ kind: 'closed' })
 
   const handleSubmit = async (
-    values: TaskFormValues & { parentId: string | null },
+    values: TaskFormValues & {
+      parentId: string | null
+      etaMinutes?: number
+    },
   ) => {
     if (formMode.kind === 'edit') {
       const payload = taskFormToNewTask(values)
@@ -43,6 +46,7 @@ function ActiveView() {
         status: payload.status,
         startDate: payload.startDate,
         dueDate: payload.dueDate,
+        etaMinutes: payload.etaMinutes,
       })
     } else {
       await add(taskFormToNewTask(values))

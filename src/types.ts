@@ -14,6 +14,8 @@ export interface Task {
   startDate?: string
   /** ISO date string YYYY-MM-DD */
   dueDate?: string
+  /** Estimated effort in whole minutes */
+  etaMinutes?: number
   completedAt?: Date
   createdAt: Date
   updatedAt: Date

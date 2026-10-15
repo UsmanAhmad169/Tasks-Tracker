@@ -1,3 +1,4 @@
+import { formatMinutesLong } from './formatTime'
 import type { NewTask, Priority, Task, TaskStatus } from './types'
 
 export type TaskFormValues = {
@@ -7,6 +8,8 @@ export type TaskFormValues = {
   status: TaskStatus
   startDate: string
   dueDate: string
+  /** Human duration text, e.g. "2 hours" or "2h 30m" */
+  eta: string
 }
 
 export function emptyTaskFormValues(): TaskFormValues {
@@ -17,6 +20,7 @@ export function emptyTaskFormValues(): TaskFormValues {
     status: 'todo',
     startDate: '',
     dueDate: '',
+    eta: '',
   }
 }
 
@@ -28,11 +32,18 @@ export function taskFormValuesFromTask(task: Task): TaskFormValues {
     status: task.status,
     startDate: task.startDate ?? '',
     dueDate: task.dueDate ?? '',
+    eta:
+      task.etaMinutes != null && task.etaMinutes > 0
+        ? formatMinutesLong(task.etaMinutes)
+        : '',
   }
 }
 
 export function taskFormToNewTask(
-  values: TaskFormValues & { parentId: string | null },
+  values: TaskFormValues & {
+    parentId: string | null
+    etaMinutes?: number
+  },
 ): NewTask {
   return {
     title: values.title.trim(),
@@ -42,5 +53,6 @@ export function taskFormToNewTask(
     parentId: values.parentId,
     startDate: values.startDate || undefined,
     dueDate: values.dueDate || undefined,
+    etaMinutes: values.etaMinutes,
   }
 }

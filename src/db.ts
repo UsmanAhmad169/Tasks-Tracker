@@ -87,6 +87,7 @@ export async function createTask(input: NewTask): Promise<Task> {
     parentId: input.parentId,
     startDate: input.startDate,
     dueDate: input.dueDate,
+    etaMinutes: input.etaMinutes,
     completedAt: status === 'done' ? timestamp : undefined,
     createdAt: timestamp,
     updatedAt: timestamp,
@@ -119,6 +120,10 @@ export async function updateTask(
     next.completedAt = changes.completedAt ?? timestamp
   } else if (changes.status != null && changes.status !== 'done') {
     next.completedAt = undefined
+  }
+
+  if ('etaMinutes' in changes && changes.etaMinutes == null) {
+    delete next.etaMinutes
   }
 
   await db.tasks.put(next)

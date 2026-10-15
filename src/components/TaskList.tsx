@@ -128,8 +128,27 @@ function TaskRow({
                 No dates
               </span>
             )}
-            {spentMinutes > 0 ? (
-              <span className="task-row__spent">{formatMinutes(spentMinutes)}</span>
+            {spentMinutes > 0 || node.etaMinutes != null ? (
+              <span
+                className={`task-row__spent${
+                  node.etaMinutes != null &&
+                  spentMinutes > node.etaMinutes
+                    ? ' task-row__spent--over'
+                    : ''
+                }`}
+                title={
+                  node.etaMinutes != null
+                    ? `Spent ${formatMinutes(spentMinutes)} of ETA ${formatMinutes(node.etaMinutes)}`
+                    : undefined
+                }
+              >
+                {spentMinutes > 0
+                  ? formatMinutes(spentMinutes)
+                  : '0m'}
+                {node.etaMinutes != null
+                  ? ` / ${formatMinutes(node.etaMinutes)}`
+                  : ''}
+              </span>
             ) : null}
           </div>
         </div>

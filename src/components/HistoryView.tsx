@@ -110,8 +110,23 @@ export default function HistoryView() {
                           ? format(task.completedAt, 'h:mm a')
                           : '—'}
                       </span>
-                      <span className="history-item__time">
+                      <span
+                        className={`history-item__time${
+                          task.etaMinutes != null &&
+                          totalMinutes > task.etaMinutes
+                            ? ' history-item__time--over'
+                            : ''
+                        }`}
+                        title={
+                          task.etaMinutes != null
+                            ? `Spent ${formatMinutes(totalMinutes)} of ETA ${formatMinutes(task.etaMinutes)}`
+                            : undefined
+                        }
+                      >
                         {formatMinutes(totalMinutes)}
+                        {task.etaMinutes != null
+                          ? ` / ${formatMinutes(task.etaMinutes)}`
+                          : ''}
                       </span>
                     </div>
                   </li>
