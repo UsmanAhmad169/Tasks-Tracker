@@ -114,6 +114,134 @@
 }
 
 /* Timeline Gantt */
+.gantt__range {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 0.85rem 1.25rem;
+  margin: 0 0 1.15rem;
+  padding: 0.85rem 1rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+}
+
+.gantt__range-fields {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem 1rem;
+}
+
+.gantt__range-field {
+  margin-bottom: 0;
+  min-width: 9.5rem;
+}
+
+.gantt__range-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.gantt__filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  margin: 0 0 1.15rem;
+}
+
+.gantt__chip {
+  appearance: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font: inherit;
+  font-size: 0.8rem;
+  font-weight: 550;
+  line-height: 1.2;
+  padding: 0.4rem 0.65rem;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text);
+  cursor: pointer;
+  transition:
+    background 0.15s ease,
+    border-color 0.15s ease,
+    color 0.15s ease;
+}
+
+.gantt__chip:hover:not(:disabled) {
+  border-color: color-mix(in srgb, var(--accent) 40%, var(--border));
+  color: var(--text-h);
+}
+
+.gantt__chip:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.gantt__chip:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.gantt__chip.is-active {
+  border-color: color-mix(in srgb, var(--accent) 55%, var(--border));
+  background: color-mix(in srgb, var(--accent) 12%, var(--surface));
+  color: var(--text-h);
+}
+
+.gantt__chip--overdue.is-active {
+  border-color: color-mix(in srgb, var(--danger) 45%, var(--border));
+  background: var(--danger-bg);
+  color: var(--danger);
+}
+
+.gantt__chip--delayed.is-active {
+  border-color: color-mix(in srgb, var(--priority-high-fg) 40%, var(--border));
+  background: var(--priority-high-bg);
+  color: var(--priority-high-fg);
+}
+
+.gantt__chip--due_today.is-active {
+  border-color: color-mix(in srgb, var(--priority-medium-fg) 40%, var(--border));
+  background: var(--priority-medium-bg);
+  color: var(--priority-medium-fg);
+}
+
+.gantt__chip-count {
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+  opacity: 0.85;
+}
+
+.gantt__health {
+  font-weight: 600;
+}
+
+.gantt__health--overdue {
+  color: var(--danger);
+}
+
+.gantt__health--delayed {
+  color: var(--priority-high-fg);
+}
+
+.gantt__health--due_today {
+  color: var(--priority-medium-fg);
+}
+
+.gantt__health--due_soon {
+  color: var(--accent);
+}
+
+.gantt__health--on_track,
+.gantt__health--done {
+  color: var(--text);
+}
+
 .gantt {
   display: flex;
   flex-direction: column;
@@ -261,30 +389,45 @@
   transition: filter 0.15s ease;
 }
 
-.gantt__bar--high {
+.gantt__bar--overdue {
+  background: var(--danger-bg);
+  color: var(--danger);
+  border: 1px solid color-mix(in srgb, var(--danger) 32%, transparent);
+}
+
+.gantt__bar--delayed {
   background: var(--priority-high-bg);
   color: var(--priority-high-fg);
   border: 1px solid color-mix(in srgb, var(--priority-high-fg) 28%, transparent);
 }
 
-.gantt__bar--medium {
+.gantt__bar--due_today {
   background: var(--priority-medium-bg);
   color: var(--priority-medium-fg);
   border: 1px solid color-mix(in srgb, var(--priority-medium-fg) 28%, transparent);
 }
 
-.gantt__bar--low {
-  background: var(--priority-low-bg);
-  color: var(--priority-low-fg);
-  border: 1px solid color-mix(in srgb, var(--priority-low-fg) 28%, transparent);
+.gantt__bar--due_soon {
+  background: color-mix(in srgb, var(--accent) 16%, var(--surface));
+  color: var(--accent-hover);
+  border: 1px solid color-mix(in srgb, var(--accent) 35%, transparent);
+}
+
+.gantt__bar--on_track {
+  background: color-mix(in srgb, var(--accent) 10%, var(--surface-muted));
+  color: var(--text-h);
+  border: 1px solid color-mix(in srgb, var(--border) 80%, var(--accent));
+}
+
+.gantt__bar--done {
+  background: var(--surface-muted);
+  color: var(--text);
+  border: 1px solid var(--border);
+  filter: saturate(0.55);
 }
 
 .gantt__bar--active {
   box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--accent) 55%, transparent);
-}
-
-.gantt__bar--done {
-  filter: saturate(0.55);
 }
 
 .gantt__bar-label {
@@ -324,19 +467,34 @@
   border: 1px solid transparent;
 }
 
-.gantt__swatch--high {
+.gantt__swatch--overdue {
+  background: var(--danger-bg);
+  border-color: color-mix(in srgb, var(--danger) 32%, transparent);
+}
+
+.gantt__swatch--delayed {
   background: var(--priority-high-bg);
   border-color: color-mix(in srgb, var(--priority-high-fg) 28%, transparent);
 }
 
-.gantt__swatch--medium {
+.gantt__swatch--due_today {
   background: var(--priority-medium-bg);
   border-color: color-mix(in srgb, var(--priority-medium-fg) 28%, transparent);
 }
 
-.gantt__swatch--low {
-  background: var(--priority-low-bg);
-  border-color: color-mix(in srgb, var(--priority-low-fg) 28%, transparent);
+.gantt__swatch--due_soon {
+  background: color-mix(in srgb, var(--accent) 16%, var(--surface));
+  border-color: color-mix(in srgb, var(--accent) 35%, transparent);
+}
+
+.gantt__swatch--on_track {
+  background: color-mix(in srgb, var(--accent) 10%, var(--surface-muted));
+  border-color: color-mix(in srgb, var(--border) 80%, var(--accent));
+}
+
+.gantt__swatch--done {
+  background: var(--surface-muted);
+  border-color: var(--border);
 }
 
 @media (max-width: 720px) {

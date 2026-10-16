@@ -159,7 +159,8 @@ export async function listAllTasks(): Promise<Task[]> {
 
 export async function listTimelineTasks(): Promise<Task[]> {
   const tasks = await db.tasks.toArray()
-  return tasks.filter((t) => Boolean(t.startDate && t.dueDate))
+  // Due date is enough for schedule health; missing start uses due as a 1-day bar.
+  return tasks.filter((t) => Boolean(t.dueDate))
 }
 
 export async function getSubtasks(parentId: string): Promise<Task[]> {
