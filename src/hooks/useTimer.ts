@@ -2,6 +2,7 @@ import { liveQuery } from 'dexie'
 import { useCallback, useEffect, useState } from 'react'
 import {
   addManualTimeEntry,
+  deleteTimeEntry,
   getRunningTimer,
   startTimer,
   stopRunningTimer,
@@ -99,6 +100,20 @@ export function useTimer() {
     }
   }, [])
 
+  const removeEntry = useCallback(async (id: string) => {
+    setBusy(true)
+    setError(null)
+    try {
+      await deleteTimeEntry(id)
+    } catch (err) {
+      const next = err instanceof Error ? err : new Error(String(err))
+      setError(next)
+      throw next
+    } finally {
+      setBusy(false)
+    }
+  }, [])
+
   return {
     running,
     elapsedSeconds,
@@ -108,6 +123,7 @@ export function useTimer() {
     start,
     stop,
     addManual,
+    removeEntry,
   }
 }
 

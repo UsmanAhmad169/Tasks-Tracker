@@ -21,6 +21,7 @@ type TimeLogPanelProps = {
     startAt: Date
     note?: string
   }) => Promise<unknown>
+  onDeleteEntry: (id: string) => Promise<unknown>
 }
 
 export default function TimeLogPanel({
@@ -32,6 +33,7 @@ export default function TimeLogPanel({
   onStart,
   onStop,
   onAddManual,
+  onDeleteEntry,
 }: TimeLogPanelProps) {
   const formId = useId()
   const isRunningHere = running?.taskId === task.id
@@ -97,6 +99,27 @@ export default function TimeLogPanel({
     } catch (err) {
       setFormError(
         err instanceof Error ? err.message : 'Could not save time entry.',
+      )
+    }
+  }
+
+  const handleDeleteEntry = async (entry: TimeEntry) => {
+    const mins = entryDurationMinutes(entry)
+    const dateLabel = format(new Date(entry.startAt), 'MMM d')
+    const detail =
+      entry.endAt == null
+        ? `running entry from ${dateLabel}`
+        : `${formatMinutes(mins)} entry from ${dateLabel}`
+
+    if (!window.confirm(`Delete this ${detail}?`)) return
+
+    setFormError(null)
+    setManualSaved(false)
+    try {
+      await onDeleteEntry(entry.id)
+    } catch (err) {
+      setFormError(
+        err instanceof Error ? err.message : 'Could not delete time entry.',
       )
     }
   }
@@ -219,6 +242,15 @@ export default function TimeLogPanel({
                   <span className="time-log__entry-mins">
                     {isOpen ? formatElapsed(elapsedSeconds) : formatMinutes(mins)}
                   </span>
+                  <button
+                    type="button"
+                    className="btn btn--ghost btn--small btn--danger time-log__entry-delete"
+                    onClick={() => handleDeleteEntry(entry)}
+                    disabled={busy}
+                    aria-label={`Delete time entry from ${format(new Date(entry.startAt), 'MMM d')}`}
+                  >
+                    Delete
+                  </button>
                   {entry.note ? (
                     <span className="time-log__entry-note">{entry.note}</span>
                   ) : null}

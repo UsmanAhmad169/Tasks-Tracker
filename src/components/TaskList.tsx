@@ -204,6 +204,7 @@ function TaskRow({
               onStart={timer.start}
               onStop={timer.stop}
               onAddManual={timer.addManual}
+              onDeleteEntry={timer.removeEntry}
             />
           </div>
         ) : null}

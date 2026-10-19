@@ -959,7 +959,8 @@
 
 .time-log__entry {
   display: grid;
-  grid-template-columns: 1fr auto;
+  grid-template-columns: 1fr auto auto;
+  align-items: center;
   gap: 0.15rem 0.75rem;
   font-size: 0.875rem;
 }
@@ -972,6 +973,10 @@
   font-weight: 600;
   font-variant-numeric: tabular-nums;
   color: var(--text-h);
+}
+
+.time-log__entry-delete {
+  padding-inline: 0.45rem;
 }
 
 .time-log__entry-note {
