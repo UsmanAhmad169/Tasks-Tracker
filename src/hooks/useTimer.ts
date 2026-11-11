@@ -53,11 +53,11 @@ export function useTimer() {
       )
     : 0
 
-  const start = useCallback(async (taskId: string) => {
+  const start = useCallback(async (taskId: string, note?: string) => {
     setBusy(true)
     setError(null)
     try {
-      return await startTimer(taskId)
+      return await startTimer(taskId, note)
     } catch (err) {
       const next = err instanceof Error ? err : new Error(String(err))
       setError(next)

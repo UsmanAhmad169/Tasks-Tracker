@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import DailyTimeView from './components/DailyTimeView'
 import HistoryView from './components/HistoryView'
+import PlanView from './components/PlanView'
 import TaskForm from './components/TaskForm'
 import TaskList from './components/TaskList'
 import TimelineChart from './components/TimelineChart'
@@ -12,7 +13,7 @@ import {
 import type { Task, TaskStatus } from './types'
 import './App.css'
 
-type TabId = 'active' | 'history' | 'daily' | 'timeline'
+type TabId = 'active' | 'plan' | 'history' | 'daily' | 'timeline'
 
 type FormMode =
   | { kind: 'closed' }
@@ -21,6 +22,7 @@ type FormMode =
 
 const TABS: { id: TabId; label: string }[] = [
   { id: 'active', label: 'Active' },
+  { id: 'plan', label: 'Plan' },
   { id: 'history', label: 'History' },
   { id: 'daily', label: 'Daily' },
   { id: 'timeline', label: 'Timeline' },
@@ -158,6 +160,7 @@ function App() {
         className={`app-main${tab === 'timeline' ? ' app-main--wide' : ''}`}
       >
         {tab === 'active' ? <ActiveView /> : null}
+        {tab === 'plan' ? <PlanView /> : null}
         {tab === 'history' ? <HistoryView /> : null}
         {tab === 'daily' ? <DailyTimeView /> : null}
         {tab === 'timeline' ? <TimelineChart /> : null}
