@@ -11,10 +11,13 @@ import {
   parseISO,
   startOfDay,
 } from 'date-fns'
+import { WORKDAY_MINUTES } from './scheduleHealth'
 import type {
   DailyTimeSummary,
+  DayPlan,
   NewTask,
   NewTimeEntry,
+  PlanItem,
   Task,
   TaskUpdate,
   TimeEntry,
@@ -26,12 +29,19 @@ const DB_NAME = 'TasksTracker'
 export class TasksDatabase extends Dexie {
   tasks!: EntityTable<Task, 'id'>
   timeEntries!: EntityTable<TimeEntry, 'id'>
+  dayPlans!: EntityTable<DayPlan, 'date'>
+  planItems!: EntityTable<PlanItem, 'id'>
 
   constructor() {
     super(DB_NAME)
     this.version(1).stores({
       tasks: 'id, parentId, status, priority, dueDate, completedAt, updatedAt',
       timeEntries: 'id, taskId, startAt, endAt',
+    })
+    this.version(2).stores({
+      dayPlans: 'date',
+      // One plan row per task per day
+      planItems: 'id, date, taskId, &[date+taskId]',
     })
   }
 }
@@ -134,8 +144,9 @@ export async function deleteTask(id: string): Promise<void> {
   const descendantIds = await getDescendantIds(id)
   const ids = [id, ...descendantIds]
 
-  await db.transaction('rw', db.tasks, db.timeEntries, async () => {
+  await db.transaction('rw', db.tasks, db.timeEntries, db.planItems, async () => {
     await db.timeEntries.where('taskId').anyOf(ids).delete()
+    await db.planItems.where('taskId').anyOf(ids).delete()
     await db.tasks.bulkDelete(ids)
   })
 }
@@ -276,12 +287,16 @@ export async function stopRunningTimer(
  * Start a timer on `taskId`. Stops any previously running timer first
  * (one active timer at a time).
  */
-export async function startTimer(taskId: string): Promise<TimeEntry> {
+export async function startTimer(
+  taskId: string,
+  note?: string,
+): Promise<TimeEntry> {
   await stopRunningTimer()
   return createTimeEntry({
     taskId,
     startAt: now(),
     endAt: null,
+    note,
   })
 }
 
@@ -427,6 +442,104 @@ export function calendarDaysCovered(
     result.push(format(addDays(startDay, i), 'yyyy-MM-dd'))
   }
   return result
+}
+
+// ---------------------------------------------------------------------------
+// Day plans
+// ---------------------------------------------------------------------------
+
+export async function getDayPlan(dayIso: string): Promise<DayPlan | undefined> {
+  return db.dayPlans.get(dayIso)
+}
+
+/** Create the day's plan record on first write; capacity defaults to a workday. */
+export async function upsertDayPlan(
+  dayIso: string,
+  changes: Partial<Pick<DayPlan, 'capacityMinutes' | 'retroNote'>>,
+): Promise<DayPlan> {
+  return db.transaction('rw', db.dayPlans, async () => {
+    const existing = await db.dayPlans.get(dayIso)
+    const timestamp = now()
+    const next: DayPlan = {
+      date: dayIso,
+      capacityMinutes: existing?.capacityMinutes ?? WORKDAY_MINUTES,
+      retroNote: existing?.retroNote,
+      createdAt: existing?.createdAt ?? timestamp,
+      ...changes,
+      updatedAt: timestamp,
+    }
+    await db.dayPlans.put(next)
+    return next
+  })
+}
+
+export async function listPlanItems(dayIso: string): Promise<PlanItem[]> {
+  return db.planItems.where('date').equals(dayIso).sortBy('order')
+}
+
+/**
+ * Add a task to a day's plan. If the task is already planned that day,
+ * the minutes are added to the existing row instead.
+ */
+export async function addPlanItem(input: {
+  date: string
+  taskId: string
+  plannedMinutes: number
+}): Promise<PlanItem> {
+  return db.transaction('rw', db.planItems, async () => {
+    const existing = await db.planItems
+      .where('[date+taskId]')
+      .equals([input.date, input.taskId])
+      .first()
+    if (existing) {
+      const next = {
+        ...existing,
+        plannedMinutes: existing.plannedMinutes + input.plannedMinutes,
+      }
+      await db.planItems.put(next)
+      return next
+    }
+
+    const siblings = await db.planItems.where('date').equals(input.date).toArray()
+    const order = siblings.reduce((max, item) => Math.max(max, item.order + 1), 0)
+    const item: PlanItem = {
+      id: newId(),
+      date: input.date,
+      taskId: input.taskId,
+      plannedMinutes: input.plannedMinutes,
+      order,
+      createdAt: now(),
+    }
+    await db.planItems.add(item)
+    return item
+  })
+}
+
+export async function updatePlanItem(
+  id: string,
+  changes: Partial<Pick<PlanItem, 'plannedMinutes' | 'note'>>,
+): Promise<void> {
+  // Dexie removes a property when its update value is undefined
+  await db.planItems.update(id, changes)
+}
+
+export async function removePlanItem(id: string): Promise<void> {
+  await db.planItems.delete(id)
+}
+
+/** Move an item one slot up (-1) or down (+1) within its day. */
+export async function movePlanItem(id: string, direction: -1 | 1): Promise<void> {
+  await db.transaction('rw', db.planItems, async () => {
+    const item = await db.planItems.get(id)
+    if (!item) return
+    const items = await listPlanItems(item.date)
+    const from = items.findIndex((i) => i.id === id)
+    const to = from + direction
+    if (from < 0 || to < 0 || to >= items.length) return
+    const [moved] = items.splice(from, 1)
+    items.splice(to, 0, moved)
+    await db.planItems.bulkPut(items.map((i, index) => ({ ...i, order: index })))
+  })
 }
 
 // ---------------------------------------------------------------------------

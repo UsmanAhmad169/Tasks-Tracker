@@ -85,3 +85,10 @@ export function parseDurationToMinutes(input: string): number | null {
   const rounded = Math.round(total)
   return rounded > 0 ? rounded : null
 }
+
+/** Format a signed minute difference as "+1h 15m", "−20m", or "±0m". */
+export function formatSignedMinutes(totalMinutes: number): string {
+  const mins = Math.round(totalMinutes)
+  if (mins === 0) return '±0m'
+  return `${mins > 0 ? '+' : '−'}${formatMinutes(Math.abs(mins))}`
+}

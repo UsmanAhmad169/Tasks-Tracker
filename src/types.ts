@@ -75,3 +75,71 @@ export interface DailyTimeSummary {
   totalMinutes: number
   byTask: DailyTaskTime[]
 }
+
+export interface DayPlan {
+  /** ISO date string YYYY-MM-DD (primary key) */
+  date: string
+  /** Time available for planned work, in whole minutes */
+  capacityMinutes: number
+  retroNote?: string
+  createdAt: Date
+  updatedAt: Date
+}
+
+export interface PlanItem {
+  id: string
+  /** ISO date string YYYY-MM-DD */
+  date: string
+  taskId: string
+  plannedMinutes: number
+  /** What you intend to do on this task that day */
+  note?: string
+  /** Position within the day's plan (ascending) */
+  order: number
+  createdAt: Date
+}
+
+export type PlanItemStatus = 'on_target' | 'over' | 'under' | 'not_started'
+
+export interface PlanItemResult {
+  item: PlanItem
+  title: string
+  parentTitle: string | null
+  /** Task was marked done on this day */
+  completedOnDay: boolean
+  actualMinutes: number
+  /** actual − planned */
+  varianceMinutes: number
+  status: PlanItemStatus
+  running: boolean
+  /** Subtasks whose time rolled into this planned item */
+  includes: { taskId: string; title: string; minutes: number }[]
+}
+
+export interface OtherTaskTime {
+  taskId: string
+  title: string
+  parentTitle: string | null
+  minutes: number
+  completedOnDay: boolean
+  running: boolean
+  entries: DailyEntrySlice[]
+}
+
+export interface DayRetro {
+  date: string
+  capacityMinutes: number
+  plannedMinutes: number
+  /** All time logged on the day */
+  actualMinutes: number
+  /** Time that counted toward planned items */
+  plannedActualMinutes: number
+  /** Time on tasks with no planned ancestor-or-self */
+  otherMinutes: number
+  /** plannedActual ÷ actual; null when nothing was logged */
+  adherence: number | null
+  /** 1 − Σ|actual − planned| ÷ Σ planned; null when nothing was planned */
+  estimateAccuracy: number | null
+  items: PlanItemResult[]
+  otherTasks: OtherTaskTime[]
+}
